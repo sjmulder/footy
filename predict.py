@@ -199,5 +199,6 @@ for team in missing_teams:
 
 print
 
+name_w = max([len(t) for t in teams])
 for a, b in future_matches:
-    print best_algo.predict(a, b)
+    print ' ' * (name_w - len(a)) + repr(best_algo.predict(a, b))
