@@ -2,9 +2,11 @@
 # coding=utf-8
 
 import math
-import matplotlib.pyplot as pyplot
 import json
-import pprint
+
+# Uncomment if you want to plot or pretty print some data
+#import matplotlib.pyplot as pyplot
+#import pprint
 
 class MatchResult:
     WIN  = 1
