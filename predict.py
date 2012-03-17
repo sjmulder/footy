@@ -89,21 +89,28 @@ class LinearRegressionScore:
     matches = []
     stats = {}
 
+    def draw_prediction(self, history, w0, w1):
+        xs = [x for x, _ in history]
+        ys = [y for _, y in history]
+        pyplot.plot(ys, xs, 'ro',
+                    [w0 + w1 * x for x in range(int(max(xs) + 1))])
+        pyplot.show()
+        #pprint.pprint(history)
+        #print 'y = {0} * x + {1}'.format(w1, w0);
+
     def predict_team(self, us, them):
-        if len(matches) == 0:
+        if len(matches) == 0 or not (them in self.stats):
             return 0
         history = []
         history.extend([(m.a_score, self.stats[m.b_name].score_mean)
                         for m in matches 
                          if m.a_name == us
-                        and m.b_name == them
                         and m.b_name in self.stats])
         history.extend([(m.b_score, self.stats[m.a_name].score_mean)
                         for m in matches 
                          if m.b_name == us 
-                        and m.a_name == them
                         and m.a_name in self.stats])
-        n = len(history)
+        n = float(len(history))
         if n == 0:
             return 0
         sum_x  = sum([x for x, _ in history])
@@ -115,7 +122,8 @@ class LinearRegressionScore:
             return self.stats[us].score_mean
         w1 = (n * sum_xy - sum_x * sum_y) / d
         w0 = (sum_y - w1 * sum_x) / n
-        return w0 + w1 * self.stats[them].score_mean
+        #self.draw_prediction(history, w0, w1)
+        return int(round(w0 + w1 * self.stats[them].score_mean))
 
     def predict(self, a_name, b_name):
         return MatchResult(a_name, self.predict_team(a_name, b_name),
@@ -149,6 +157,12 @@ for match in matches:
 d = float(len(matches))
 for algo in algorithms:
     algo_name = algo.__class__.__name__
+    zipped = zip(predictions[algo_name], matches)
     error = sum([abs(p.a_score - m.a_score) + abs(p.b_score - m.b_score)
-                 for p, m in zip(predictions[algo_name], matches)]) / d
-    print 'Error for {0} = {1}'.format(algo_name, error)
+                 for p, m in zipped]) / d
+    error_plus = sum([max(0, p.a_score - m.a_score) + max(0, p.b_score - m.b_score)
+                     for p, m in zipped]) / d
+    error_min  = sum([min(0, p.a_score - m.a_score) + min(0, p.b_score - m.b_score)
+                     for p, m in zipped]) / d
+    print 'Error for {0} = {1} (+{2}, {3})'.format(
+        algo_name, error, error_plus, error_min)
