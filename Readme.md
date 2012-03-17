@@ -9,6 +9,26 @@ Usage
     ./scrape.sh   # get match results from eredivisielive.nl
     ./predict.py  # run algorithms and use best one to predict results
 
+Example predictor output:
+
+    …
+    
+    score: 4.89 (-2.28 ± 2.600 for NaiveClassifier
+    score: 3.01 (-0.39 ± 2.610 for MeanScore
+    score: 2.63 (-0.40 ± 2.230 for LinearRegressionScore
+
+    NEW PREDICTIONS by LinearRegressionScore
+
+             Vitesse 2 - 1 Heracles Almelo
+        RKC Waalwijk 2 - 1 De Graafschap
+           Excelsior 2 - 2 Roda JC Kerkrade
+           VVV-Venlo 1 - 2 NEC
+        ADO Den Haag 2 - 2 Ajax
+                 PSV 1 - 1 sc Heerenveen
+          FC Utrecht 2 - 1 FC Groningen
+           FC Twente 1 - 2 Feyenoord
+                  AZ 1 - 1 NAC Breda
+
 See `predict.py` for the algorithm descriptions and the list of future matches to predict.
 
 Requirements
