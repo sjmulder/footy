@@ -13,9 +13,9 @@ Example predictor output:
 
     …
     
-    score: 4.89 (-2.28 ± 2.600 for NaiveClassifier
-    score: 3.01 (-0.39 ± 2.610 for MeanScore
-    score: 2.63 (-0.40 ± 2.230 for LinearRegressionScore
+    score: 4.89 (-2.28 ± 2.60) for NaiveClassifier
+    score: 3.01 (-0.39 ± 2.61) for MeanScore
+    score: 2.63 (-0.40 ± 2.23) for LinearRegressionScore
 
     NEW PREDICTIONS by LinearRegressionScore
 

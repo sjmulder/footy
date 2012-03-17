@@ -193,7 +193,7 @@ for algo in algorithms:
     mu     = sum(loss) / d
     sigma  = math.sqrt(sum([l ** 2 for l in loss]) / d)
     score  = abs(mu) + sigma
-    print 'score: %1.2f (% 1.2f ± %1.2f0 for %s' % (score, mu, sigma, algo_name)
+    print 'score: %1.2f (% 1.2f ± %1.2f) for %s' % (score, mu, sigma, algo_name)
     if best_score == None or best_score > score:
         best_score = score
         best_algo  = algo
