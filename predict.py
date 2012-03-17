@@ -155,6 +155,8 @@ for match in matches:
     print
 
 d = float(len(matches))
+best_error = None
+best_algo  = None
 for algo in algorithms:
     algo_name = algo.__class__.__name__
     zipped = zip(predictions[algo_name], matches)
@@ -166,3 +168,35 @@ for algo in algorithms:
                      for p, m in zipped]) / d
     print 'Error for {0} = {1} (+{2}, {3})'.format(
         algo_name, error, error_plus, error_min)
+    if best_error == None or best_error > error:
+        best_error = error
+        best_algo  = algo
+
+print
+print 'NEW PREDICTIONS by ' + best_algo.__class__.__name__
+
+future_matches = [
+    ('Vitesse', 'Heracles Almelo'),
+    ('RKC Waalwijk', 'De Graafschap'),
+    ('Excelsior', 'Roda JC Kerkrade'),
+    ('VVV-Venlo', 'NEC'),
+    ('ADO Den Haag', 'Ajax'),
+    ('PSV', 'sc Heerenveen'),
+    ('FC Utrecht', 'FC Groningen'),
+    ('FC Twente', 'Feyenoord'),
+    ('AZ', 'NAC Breda')
+]
+
+teams = set([m.a_name for m in matches] +
+            [m.b_name for m in matches])
+fm_teams = set([a for a, _ in future_matches] +
+               [b for _, b in future_matches])
+
+missing_teams = [t for t in fm_teams if not (t in teams)]
+for team in missing_teams:
+    print 'Warning! Unknown team ' + team
+
+print
+
+for a, b in future_matches:
+    print best_algo.predict(a, b)
