@@ -1,3 +1,6 @@
+# coding=utf-8
+
+import math
 import matplotlib.pyplot as pyplot
 import json
 import pprint
@@ -155,21 +158,19 @@ for match in matches:
     print
 
 d = float(len(matches))
-best_error = None
+best_score = None
 best_algo  = None
 for algo in algorithms:
     algo_name = algo.__class__.__name__
     zipped = zip(predictions[algo_name], matches)
-    error = sum([abs(p.a_score - m.a_score) + abs(p.b_score - m.b_score)
-                 for p, m in zipped]) / d
-    error_plus = sum([max(0, p.a_score - m.a_score) + max(0, p.b_score - m.b_score)
-                     for p, m in zipped]) / d
-    error_min  = sum([min(0, p.a_score - m.a_score) + min(0, p.b_score - m.b_score)
-                     for p, m in zipped]) / d
-    print 'Error for {0} = {1} (+{2}, {3})'.format(
-        algo_name, error, error_plus, error_min)
-    if best_error == None or best_error > error:
-        best_error = error
+    loss   = [p.a_score - m.a_score for p, m in zipped] + \
+             [p.b_score - m.b_score for p, m in zipped]
+    mu     = sum(loss) / d
+    sigma  = math.sqrt(sum([l ** 2 for l in loss]) / d)
+    score  = abs(mu) + sigma
+    print 'score: %1.2f (% 1.2f ± %1.2f0 for %s' % (score, mu, sigma, algo_name)
+    if best_score == None or best_score > score:
+        best_score = score
         best_algo  = algo
 
 print
