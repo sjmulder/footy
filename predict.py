@@ -27,7 +27,7 @@ class MatchResult:
             str(self.b_score), self.b_name)
 
 class Stats:
-    def __init__(self, num, wins, draws):
+    def __init__(self, num, wins, draws, score_mean):
         self.num    = num
         self.wins   = wins
         self.draws  = draws
@@ -35,6 +35,7 @@ class Stats:
         self.p_win  = (1. / 3.) if num == 0 else float(self.wins)  / num
         self.p_draw = (1. / 3.) if num == 0 else float(self.draws) / num
         self.p_loss = 1. - self.p_win - self.p_draw
+        self.score_mean = score_mean
 
     def __repr__(self):
         return 'wins = {0}, draws = {1}, losses = {2}'.format(
@@ -42,10 +43,14 @@ class Stats:
 
 def calc_stats(matches, team):
     filtered = [m for m in matches if m.a_name == team or m.b_name == team]
-    wins  = [m for m in filtered if m.winner == team]
+    wins = [m for m in filtered if m.winner == team]
     draws = [m for m in filtered if m.result == MatchResult.DRAW]
-    stats = Stats(len(filtered), len(wins), len(draws))
-    return stats
+    scores = []
+    scores.extend([m.a_score for m in filtered if m.a_name == team])
+    scores.extend([m.b_score for m in filtered if m.b_name == team])
+    num_scores = len(scores)
+    score_mean = None if num_scores == 0 else scores[num_scores / 2]
+    return Stats(len(filtered), len(wins), len(draws), score_mean)
 
 class NaiveClassifier:
     matches = []
@@ -67,18 +72,83 @@ class NaiveClassifier:
     def update(self, match):
         self.matches.append(match)
 
+class MeanScore:
+    matches = []
+
+    def predict(self, a_name, b_name):
+        a = calc_stats(self.matches, a_name)
+        b = calc_stats(self.matches, b_name)
+        a_score = a.score_mean if a.score_mean != None else 0
+        b_score = b.score_mean if b.score_mean != None else 0
+        return MatchResult(a_name, a_score, b_name, b_score)
+
+    def update(self, match):
+        self.matches.append(match)
+
+class LinearRegressionScore:
+    matches = []
+    stats = {}
+
+    def predict_team(self, us, them):
+        if len(matches) == 0:
+            return 0
+        history = []
+        history.extend([(m.a_score, self.stats[m.b_name].score_mean)
+                        for m in matches 
+                         if m.a_name == us
+                        and m.b_name == them
+                        and m.b_name in self.stats])
+        history.extend([(m.b_score, self.stats[m.a_name].score_mean)
+                        for m in matches 
+                         if m.b_name == us 
+                        and m.a_name == them
+                        and m.a_name in self.stats])
+        n = len(history)
+        if n == 0:
+            return 0
+        sum_x  = sum([x for x, _ in history])
+        sum_y  = sum([y for _, y in history])
+        sum_xy = sum([x * y for x, y in history])
+        sum_xx = sum([x * x for x, _ in history])
+        d = (n * sum_xx - sum_x ** 2)
+        if d == 0:
+            return self.stats[us].score_mean
+        w1 = (n * sum_xy - sum_x * sum_y) / d
+        w0 = (sum_y - w1 * sum_x) / n
+        return w0 + w1 * self.stats[them].score_mean
+
+    def predict(self, a_name, b_name):
+        return MatchResult(a_name, self.predict_team(a_name, b_name),
+                           b_name, self.predict_team(b_name, a_name))
+
+    def update(self, match):
+        self.matches.append(match)
+        teams = set([m.a_name for m in self.matches] +
+                    [m.b_name for m in self.matches])
+        self.stats = { t : calc_stats(self.matches, t) for t in teams }
+
 data = open('match_results.json', 'r').read()
 data_json = json.loads(data)
 
 matches = [MatchResult(x['a_name'], x['a_score'], x['b_name'], x['b_score']) 
            for x in data_json]
 
-algorithms = [NaiveClassifier()]
+algorithms = [NaiveClassifier(), MeanScore(), LinearRegressionScore()]
+predictions = { a.__class__.__name__ : [] for a in algorithms }
 
 for match in matches:
     for algo in algorithms:
+        algo_name = algo.__class__.__name__
         prediction = algo.predict(match.a_name, match.b_name)
+        predictions[algo_name].append(prediction)
         algo.update(match)
-        print '{0} ({1})'.format(prediction, algo.__class__.__name__)
+        print '{0} ({1})'.format(prediction, algo_name)
     print match
     print
+
+d = float(len(matches))
+for algo in algorithms:
+    algo_name = algo.__class__.__name__
+    error = sum([abs(p.a_score - m.a_score) + abs(p.b_score - m.b_score)
+                 for p, m in zip(predictions[algo_name], matches)]) / d
+    print 'Error for {0} = {1}'.format(algo_name, error)
