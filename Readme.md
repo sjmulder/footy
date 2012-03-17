@@ -1,7 +1,7 @@
 Footy
 =====
 
-An Eredivise (Dutch football leauge) prediction program. Runs several supervised algorithms over scraped match results, picks the best algorithm based on its normal distribution of its predictions, and used it makes new predictions.
+An Eredivisie (Dutch football leauge) prediction program. Runs several supervised algorithms over scraped match results, picks the best algorithm based on its normal distribution of its predictions, and used it makes new predictions.
 
 Usage
 -----
