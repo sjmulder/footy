@@ -9,7 +9,7 @@ Usage
     ./scrape.sh   # get match results from eredivisielive.nl
     ./predict.py  # run algorithms and use best one to predict results
 
-Example predictor output:
+Example prediction output:
 
     …
     
