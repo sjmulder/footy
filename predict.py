@@ -59,6 +59,11 @@ def calc_stats(matches, team):
     return Stats(len(filtered), len(wins), len(draws), score_mean)
 
 class NaiveClassifier:
+    """
+    Implements a naive bayes classifier over wins/draws/losses,
+    returning a 1 - 0, 0 - 0, or 0 - 1 result.
+    """
+
     matches = []
     
     def predict(self, a_name, b_name):
@@ -79,6 +84,11 @@ class NaiveClassifier:
         self.matches.append(match)
 
 class MeanScore:
+    """
+    Simply returns the mean of the number of goals each team
+    made in previous matches.
+    """
+
     matches = []
 
     def predict(self, a_name, b_name):
@@ -92,6 +102,16 @@ class MeanScore:
         self.matches.append(match)
 
 class LinearRegressionScore:
+    """
+    Implements the assumption the better the oponent, the fewer
+    goals a team will make - where “better” means a higher avrage
+    number of goals.
+
+    More specifically, this will compute a function that calculates
+    the number of goals a team will make given the opponent’s average 
+    number of goals per match.
+    """
+
     matches = []
     stats = {}
 
@@ -160,6 +180,8 @@ for match in matches:
     print match
     print
 
+# Calculate and print the normal distribution of the deviation from 
+# the actual match results for every algorithm
 d = float(len(matches))
 best_score = None
 best_algo  = None
@@ -179,6 +201,7 @@ for algo in algorithms:
 print
 print 'NEW PREDICTIONS by ' + best_algo.__class__.__name__
 
+# Simply pop future games in here and out comes a prediction
 future_matches = [
     ('Vitesse', 'Heracles Almelo'),
     ('RKC Waalwijk', 'De Graafschap'),
